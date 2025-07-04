@@ -26,21 +26,46 @@ class PlayerClass():
         self.hide_word = [' ' for i in range(len(self.word))]
         self.used = []
         self.attempts = 7
-        print(PHRASES.get('word'), self.hide_word)
+        print(
+            PHRASES.get("beauty"),
+            PHRASES.get('word'), 
+            self.hide_word
+            )
         self.game()
     
     def quit(self):
-        print(PHRASES.get('quit'))
+        print(
+            PHRASES.get("beauty"),
+            PHRASES.get('quit'),
+            PHRASES.get("beauty")
+            )
         
     def reset(self):
         self.table.clear_table()
         self.table.create_table()
+        print(
+            PHRASES.get("beauty"),
+            PHRASES.get("reset"),
+            PHRASES.get("beauty")
+            )
+        self.choice()
     
     def win(self):
-        pass
+        print(
+            PHRASES.get("beauty"),
+            PHRASES.get("win_lose"), 
+            self.word,
+            PHRASES.get("beauty")
+            )
+        self.choice()
     
     def lose(self):
-        print(PHRASES.get("end_lose"), self.word)
+        print(
+            PHRASES.get("beauty"),
+            PHRASES.get("end_lose"), 
+            self.word,
+            PHRASES.get("beauty"),
+            )
         self.choice()
         
     def game(self):
@@ -53,22 +78,26 @@ class PlayerClass():
                 self.hide_word = helper(self.word, self.hide_word, desicion)
                 self.used.append(desicion)
                 print(
+                    PHRASES.get('beauty'),
                     PHRASES.get('correct'), 
                     self.hide_word,
                     PHRASES.get("attempts"),
                     self.attempts,
                     PHRASES.get("used"),
-                    self.used
+                    self.used,
+                    PHRASES.get('beauty')
                     )
             else:
                 self.attempts -= 1
                 self.used.append(desicion)
                 print(
+                    PHRASES.get('beauty'),
                     PHRASES.get('incorrect'), 
                     self.hide_word,
                     PHRASES.get("attempts"),
                     self.attempts,
                     PHRASES.get("used"),
-                    self.used
+                    self.used,
+                    PHRASES.get('beauty')
                     )
     
