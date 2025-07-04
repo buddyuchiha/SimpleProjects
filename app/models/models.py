@@ -6,9 +6,8 @@ from static.consts import PATHS
 
 class WordsTable():
     def __init__(self):
-        self.connection = sqlite3.connect("database.db")
+        self.connection = sqlite3.connect(PATHS.get('database'))
         self.cursor = self.connection.cursor()
-        self.clear_table()
         
     def create_table(self):
         self.cursor.execute('''

@@ -1,4 +1,4 @@
-from static.consts import PHRASES
+from static.consts import PHRASES, ALPHABET, HANGMAN
 from models.models import WordsTable
 from .functions import helper
 
@@ -21,6 +21,7 @@ class PlayerClass():
                 pass 
             
     def start(self):
+        self.table.clear_table()
         self.table.create_table()
         self.word = [a for a in self.table.get_word()] 
         self.hide_word = [' ' for i in range(len(self.word))]
@@ -63,18 +64,22 @@ class PlayerClass():
         print(
             PHRASES.get("beauty"),
             PHRASES.get("end_lose"), 
-            self.word,
+            self.word, '\n',
+            HANGMAN.get(self.attempts+1),
             PHRASES.get("beauty"),
             )
         self.choice()
         
     def game(self):
-        while True:
-            desicion = input(PHRASES.get('input'))
+        while self.hide_word != self.word:
             if self.attempts <= 0:
                 self.lose()
-                break 
-            elif desicion in self.word:
+                break
+            desicion = input(PHRASES.get('input')).lower()
+            if desicion not in ALPHABET:
+                print(PHRASES.get("rus"))
+                self.game()
+            if desicion in self.word:
                 self.hide_word = helper(self.word, self.hide_word, desicion)
                 self.used.append(desicion)
                 print(
@@ -84,7 +89,8 @@ class PlayerClass():
                     PHRASES.get("attempts"),
                     self.attempts,
                     PHRASES.get("used"),
-                    self.used,
+                    self.used, '\n', 
+                    HANGMAN.get(f"{self.attempts}"),
                     PHRASES.get('beauty')
                     )
             else:
@@ -97,7 +103,9 @@ class PlayerClass():
                     PHRASES.get("attempts"),
                     self.attempts,
                     PHRASES.get("used"),
-                    self.used,
+                    self.used, '\n', 
+                    HANGMAN.get(self.attempts+1),
                     PHRASES.get('beauty')
                     )
+        self.win()
     
