@@ -1,8 +1,9 @@
 import sqlite3
-from random import randint\
+from random import randint
 
 from services.functions import read
 from static.consts import PATHS
+
 
 class WordsTable():
     def __init__(self):
@@ -21,6 +22,7 @@ class WordsTable():
     def fill_table(self):
         self.data = read(PATHS["words"])
         number = randint(1, len(self.data))
+        
         self.cursor.execute(
             'INSERT INTO Words (id, word) VALUES (?, ?)',
             (f'{number}', f'{self.data[number]}')
@@ -31,8 +33,9 @@ class WordsTable():
         self.cursor.execute('DELETE FROM "Words"')
         self.connection.commit()
         
-    def get_word(self):
+    def get_word(self) -> str:
         self.cursor.execute('SELECT word FROM Words')
+        
         word = self.cursor.fetchall()
         word = str(word[0])
         return word[2:-5]

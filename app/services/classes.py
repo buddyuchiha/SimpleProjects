@@ -4,12 +4,14 @@ from .functions import helper
 
 class PlayerClass():
     def __init__(self):
+        print (PHRASES.get('begin'))
+        
         self.table = WordsTable()
         self.choice()
         
     def choice(self):
-        print (PHRASES.get('begin'))
         self.status = input(f"{PHRASES.get('choice')} ") 
+        
         match self.status:
             case "start":
                 self.start() 
@@ -18,7 +20,8 @@ class PlayerClass():
             case "reset":
                 self.reset() 
             case _:
-                pass 
+                print(PHRASES.get("wrong"))
+                self.chocie() 
             
     def start(self):
         self.table.clear_table()
@@ -27,11 +30,13 @@ class PlayerClass():
         self.hide_word = [' ' for i in range(len(self.word))]
         self.used = []
         self.attempts = 7
+        
         print(
             PHRASES.get("beauty"),
             PHRASES.get('word'), 
             self.hide_word
             )
+        
         self.game()
     
     def quit(self):
@@ -44,11 +49,13 @@ class PlayerClass():
     def reset(self):
         self.table.clear_table()
         self.table.create_table()
+        
         print(
             PHRASES.get("beauty"),
             PHRASES.get("reset"),
             PHRASES.get("beauty")
             )
+        
         self.choice()
     
     def win(self):
@@ -58,6 +65,7 @@ class PlayerClass():
             self.word,
             PHRASES.get("beauty")
             )
+        
         self.choice()
     
     def lose(self):
@@ -68,6 +76,7 @@ class PlayerClass():
             HANGMAN.get(self.attempts+1),
             PHRASES.get("beauty"),
             )
+        
         self.choice()
         
     def game(self):
@@ -76,12 +85,15 @@ class PlayerClass():
                 self.lose()
                 break
             desicion = input(PHRASES.get('input')).lower()
+            
             if desicion not in ALPHABET:
                 print(PHRASES.get("rus"))
                 self.game()
+                
             if desicion in self.word:
                 self.hide_word = helper(self.word, self.hide_word, desicion)
                 self.used.append(desicion)
+                
                 print(
                     PHRASES.get('beauty'),
                     PHRASES.get('correct'), 
@@ -96,6 +108,7 @@ class PlayerClass():
             else:
                 self.attempts -= 1
                 self.used.append(desicion)
+                
                 print(
                     PHRASES.get('beauty'),
                     PHRASES.get('incorrect'), 
