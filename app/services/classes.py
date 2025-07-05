@@ -1,6 +1,7 @@
-from static.consts import PHRASES, ALPHABET, HANGMAN
-from models.models import WordsTable
 from .functions import helper
+from models.models import WordsTable
+from static.consts import ALPHABET, HANGMAN, PHRASES
+
 
 class PlayerClass():
     def __init__(self):
@@ -21,7 +22,7 @@ class PlayerClass():
                 self.reset() 
             case _:
                 print(PHRASES.get("wrong"))
-                self.chocie() 
+                self.choice() 
             
     def start(self):
         self.table.clear_table()
@@ -84,6 +85,7 @@ class PlayerClass():
             if self.attempts <= 0:
                 self.lose()
                 break
+            
             desicion = input(PHRASES.get('input')).lower()
             
             if desicion not in ALPHABET:
@@ -102,7 +104,7 @@ class PlayerClass():
                     self.attempts,
                     PHRASES.get("used"),
                     self.used, '\n', 
-                    HANGMAN.get(f"{self.attempts}"),
+                    HANGMAN.get(self.attempts),
                     PHRASES.get('beauty')
                     )
             else:
