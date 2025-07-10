@@ -14,7 +14,7 @@ class Map():
             for y in range(self.size):
                 point = Point(x, y)
                 coord = hash(point)
-                print(self.map_dict.get(coord, '-'), end='')
+                print(self.map_dict.get(coord, '⬜️'), end='')
             print("\n")
             
     def add_grass(self):

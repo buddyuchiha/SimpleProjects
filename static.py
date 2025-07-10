@@ -11,7 +11,7 @@ class Grass(Entity):
 class Rock(Entity): 
     def __init__(self,
                  point: Point,
-                 image: str = "🪨"
+                 image: str = "🗿"
                  ):
         super().__init__(point, image)
 

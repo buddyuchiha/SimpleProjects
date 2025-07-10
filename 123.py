@@ -1,3 +1,1 @@
-size = 5
-coords = [i for i in range(size)]
-print(coords)
+print(round(0.3))
