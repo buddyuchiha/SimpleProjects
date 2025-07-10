@@ -12,8 +12,7 @@ class Map():
         print(self.map_dict)
         for x in range(self.size):
             for y in range(self.size):
-                point = Point(x, y)
-                coord = hash(point)
+                coord = Point(x, y)
                 print(self.map_dict.get(coord, '⬜️'), end='')
             print("\n")
             

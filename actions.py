@@ -39,8 +39,7 @@ class CreateAction():
     
     def __generate_object(self, x: int, obj_name: str) -> tuple[Entity, int]:
         coord_y = self.__random_cord()
-        point = Point(x, coord_y)
-        coord = hash(point)
+        coord = Point(x, coord_y)
         
         match obj_name:
             case "rock":
