@@ -5,7 +5,7 @@ class Grass(Entity):
                  point: Point,
                  image: str = "🌱"
                  ):
-        super.__init__(point, image)
+        super().__init__(point, image)
 
 
 class Rock(Entity): 
@@ -13,7 +13,7 @@ class Rock(Entity):
                  point: Point,
                  image: str = "🪨"
                  ):
-        super.__init__(point, image)
+        super().__init__(point, image)
 
 
 class Tree(Entity):
@@ -21,4 +21,4 @@ class Tree(Entity):
                  point: Point,
                  image: str = "🌳"
                  ):
-        super.__init__(point, image)
+        super().__init__(point, image)

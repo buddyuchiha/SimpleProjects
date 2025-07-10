@@ -27,5 +27,3 @@ class Predator(Creature):
         
     def make_move(self):
         pass
-    
-    

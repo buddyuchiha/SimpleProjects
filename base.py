@@ -35,38 +35,3 @@ class Creature(Entity):
         pass 
          
     
-class Map():
-    def __init__(self, size=None):
-        self.size = size
-        self.map = {}
-        # for i in range(size):
-        #     point = Point()
-        #     self.map[point] = ['q']
-        # print(self.map)
-        
-    def print_map(self) -> None:
-        for x in range(self.size):
-            for y in range(self.size):
-                p = Point(x, y)
-                if self.map.get(p): 
-                    print(self.map.get(p), end = '')                    
-                else:
-                    print('-', end = '')
-            print(" ")
-            
-    def add_grass(self):
-        for x in range(self.size):
-            for y in range(self.size):
-                pass 
-
-
-class Simulation():    
-    def __init___(self):
-        pass 
-    
-    
-
-map = Map(5)
-map.print_map()
-
-# class Point, словарь объектов
