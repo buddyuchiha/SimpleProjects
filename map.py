@@ -1,4 +1,4 @@
-from base import Point
+from base import Point, Entity
 class Map():
     def __init__(self, size=None):
         self.size = size
@@ -16,10 +16,9 @@ class Map():
                 print(self.map_dict.get(coord, '⬜️'), end='')
             print("\n")
             
-    def add_grass(self):
-        for x in range(self.size):
-            for y in range(self.size):
-                pass 
+    def add_entity(self, point: Point, obj: Entity) -> None:
+        map_obj = obj(point)
+        self.map_dict[point] = map_obj 
 
 
 class Simulation():    

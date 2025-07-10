@@ -1,1 +1,1 @@
-print(round(0.3))
+object

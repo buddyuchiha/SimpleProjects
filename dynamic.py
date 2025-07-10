@@ -4,8 +4,8 @@ from base import Creature, Point
 class Herbivore(Creature):
     def __init__(self, 
                  point: Point, 
-                 hp: int, 
-                 speed: int, 
+                 hp: int = 10, 
+                 speed: int = 1, 
                  image: str = '🦕'
                  ):
         super().__init__(point, hp, speed, image)
@@ -17,9 +17,9 @@ class Herbivore(Creature):
 class Predator(Creature):
     def __init__(self, 
                  point: Point, 
-                 damage: int, 
-                 hp: int, 
-                 speed: int, 
+                 damage: int = 2, 
+                 hp: int = 10, 
+                 speed: int = 2, 
                  image: str = '🦖'
                  ):
         super().__init__(point, hp, speed, image)

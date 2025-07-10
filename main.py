@@ -6,5 +6,5 @@ from actions import *
     
 if __name__ == "__main__":
     map = Map(10)
-    create = CreateAction(map)
+    create = Action(map)
     map.print_map()
