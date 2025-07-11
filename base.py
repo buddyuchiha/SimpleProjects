@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Point():
     def __init__(self, x = None, y = None):
         self.x = x 

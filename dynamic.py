@@ -24,6 +24,8 @@ class Herbivore(Creature):
         for grass_point in grass_positions:
             manh_metr.append(
                 abs(point.x - grass_point.x) + abs(point.y - grass_point.y))
+            
+        goal = grass_positions[manh_metr.index(min(manh_metr))]
         
                   
 
@@ -40,4 +42,4 @@ class Predator(Creature):
         self.damage = damage     
         
     def make_move(self, map_dict: dict[Point, Entity], point: Point) -> Point:
-        
+        pass
