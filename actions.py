@@ -17,18 +17,19 @@ class Action():
         }
 
         print(self.map.size)
-        print(self.capacity)
                 
-        self.__init_actions()
+        self.init_actions()
     
     def __random_cord(self) -> int:
         if not self.coords:
             raise ValueError(self.coords)
+        
         coord = choice(self.coords)
         self.coords.remove(coord)
+        
         return coord    
     
-    def __init_actions(self):
+    def init_actions(self):
         for x in range(self.map.size):
             self.coords = [i for i in range(self.map.size)]
             for key, value in self.capacity.items():
@@ -36,4 +37,10 @@ class Action():
                     coord_y = self.__random_cord()
                     point = Point(x, coord_y)
                     self.map.add_entity(point, key)
+                    
+    def turn_actions(self):
+        for key, value in self.map.items():
+            if(isinstance(value, Creature)):
+                self.map.move_creature(key, value)
+        
                 
