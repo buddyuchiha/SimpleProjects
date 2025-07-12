@@ -41,7 +41,7 @@ class Action():
     def turn_actions(self) -> None:
         temp_map = self.map.map_dict.copy()
         for key, value in temp_map.items():
-            if(isinstance(value, Herbivore)):
+            if(isinstance(value, Creature)):
                 self.map.move_creature(key, value)
         
                 

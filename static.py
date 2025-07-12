@@ -1,4 +1,4 @@
-from base import Entity, Point
+from base import *
 
 class Grass(Entity):
     def __init__(self,

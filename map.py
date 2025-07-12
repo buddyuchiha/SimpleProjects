@@ -1,6 +1,5 @@
-from base import Point, Entity, Creature
-from dynamic import *
-
+from base import *
+from dynamic import Creature, Predator, Herbivore
 class Map():
     def __init__(self, size=None):
         self.size = size
@@ -20,10 +19,25 @@ class Map():
         self.map_dict[point] = map_obj 
 
     def move_creature(self, point: Point, obj: Creature) -> None:
-        new_coord = obj.make_move(self.map_dict, point, self.size)
-        self.map_dict.pop(point)
-        obj.point = new_coord
-        self.map_dict[new_coord] = obj
+        new_coord = obj.make_move(self.map_dict, point, self.size, obj)
+        if (isinstance(obj, Predator)):
+            target = self.map_dict.get(new_coord)
+            if(isinstance(target, Herbivore)):
+                if (target.get_hp() == 0):
+                    self.map_dict.pop(point)
+                    obj.point = new_coord
+                    self.map_dict[new_coord] = obj
+                    print(f"{target} убит")
+                else:
+                    print(f"{target} ранен")
+            else:
+                self.map_dict.pop(point)
+                obj.point = new_coord
+                self.map_dict[new_coord] = obj
+        else:
+            self.map_dict.pop(point)
+            obj.point = new_coord
+            self.map_dict[new_coord] = obj
         # self.print_map()
         # print(f"сработал move_creature для {new_coord} и {obj}")      
         

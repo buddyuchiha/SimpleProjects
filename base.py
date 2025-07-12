@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 class Point():
     def __init__(self, x = None, y = None):
         self.x = x 
@@ -24,15 +23,5 @@ class Entity(ABC):
     def __str__(self):
         return self.image 
 
-
-class Creature(Entity):
-    def __init__(self, point: Point, hp: int, speed: int, image: str):
-        self.hp = hp
-        self.speed = speed
-        super().__init__(point, image)
-        
-    @abstractmethod    
-    def make_move(self):
-        pass 
          
     

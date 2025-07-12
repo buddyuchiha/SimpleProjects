@@ -1,5 +1,4 @@
 a = [(1, 0), (0, 1), (1, 0)] 
 
-a = a[:2]
-
-print(a)
+for i in a-1:
+    print(a)
