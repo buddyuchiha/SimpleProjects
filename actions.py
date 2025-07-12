@@ -29,7 +29,7 @@ class Action():
         
         return coord    
     
-    def init_actions(self):
+    def init_actions(self) -> None:
         for x in range(self.map.size):
             self.coords = [i for i in range(self.map.size)]
             for key, value in self.capacity.items():
@@ -38,9 +38,10 @@ class Action():
                     point = Point(x, coord_y)
                     self.map.add_entity(point, key)
                     
-    def turn_actions(self):
-        for key, value in self.map.items():
-            if(isinstance(value, Creature)):
+    def turn_actions(self) -> None:
+        temp_map = self.map.map_dict.copy()
+        for key, value in temp_map.items():
+            if(isinstance(value, Herbivore)):
                 self.map.move_creature(key, value)
         
                 
