@@ -11,8 +11,7 @@ class Simulation():
         map = self.Map(10)
         action = self.Action(map)
         map.print_map()
-        for i in range(10):
-            action.turn_actions()
+        action.turn_actions()
         map.print_map() 
         print(map.map_dict)
         print(action.capacity)
@@ -42,67 +41,102 @@ class Simulation():
             map_obj = obj(point)
             self.map_dict[point] = map_obj 
 
-        def change_entity(
-            self,
-            obj: Creature, 
-            new_coord: Point,
-            point: Point
-            ):
+        def change_entity(self, obj: Creature, new_coord: Point, point: Point):
             self.map_dict.pop(point)
             obj.point = new_coord
             self.map_dict[new_coord] = obj
-            
+         
+        def is_reachable(self,point, obj) -> bool:
+            entity = self.map_dict.get(point)
+            if isinstance(obj, Herbivore):
+                return isinstance(entity, Grass)
+            else:
+                return isinstance(entity, Herbivore)
+                   
         def bfs_shortest_path(
             self, 
             start_point: Point,
             goal_point: Point,
             obj: Entity
             ) -> list[tuple[int, int]]:
+            if start_point == goal_point:
+                return []
+
+            if not self.is_reachable(goal_point, obj):
+                return []
+
             queue = deque()
             queue.append((start_point, []))
-            visited = set()
-            visited.add(start_point)  
+            visited = {start_point: True}  
             
-            if(isinstance(obj, Herbivore)):
-                entity_type = Grass 
-            elif(isinstance(obj, Predator)):
-                entity_type = Herbivore
+
+            passable_types = {None, Grass} if isinstance(obj, Herbivore) \
+                else {None, Herbivore}
+            
+            max_depth = self.size * 2
+            directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
             while queue:
                 current_point, path = queue.popleft()
+                
+                if len(path) >= max_depth:
+                    continue
 
-                if current_point == goal_point:
-                    # print(f"Path from {start_point} to {goal_point}: {path}")
-                    return path
-
-                neighbors = current_point.get_neighbours(self.size)
+                for dx, dy in directions:
+                    neighbor = Point(current_point.x + dx, current_point.y + dy)
                     
-                for neighbor in neighbors:        
-                    if neighbor not in visited:
-                        entity = self.map_dict.get(neighbor)
-                        if entity is None or isinstance(entity, entity_type):
-                            visited.add(neighbor)
-                            queue.append((neighbor, path + [(neighbor.x, neighbor.y)]))
-
-            return []
+                    if not (0 <= neighbor.x < self.size and \
+                        0 <= neighbor.y < self.size):
+                        continue
+                        
+                    if neighbor in visited:
+                        continue
+                        
+                    entity = self.map_dict.get(neighbor)
+                    if type(entity) not in passable_types:
+                        continue
+                        
+                    new_path = path + [(dx, dy)]
+                    
+                    if neighbor == goal_point:
+                        print(f"Путь: {new_path}")
+                        return new_path
+                        
+                    visited[neighbor] = True
+                    queue.append((neighbor, new_path))
+            print("Пусто")
+            return [] 
+        
+        def get_positions(
+            self,
+            obj: Entity
+            ) -> list[Point]:
+            positions = [
+                point for point, entity in self.map_dict.items() 
+                if isinstance(entity, obj)
+            ]
+            return positions
+         
+        def get_goal_point(
+            self,
+            point: Point,
+            obj: Entity
+            ) -> Point:
+            positions = self.get_positions(obj)
+            manh_metr = []
+            for goal_point in positions:
+                manh_metr.append(
+                    abs(point.x - goal_point.x) + abs(point.y - goal_point.y)
+                    )
+            return positions[manh_metr.index(min(manh_metr))]
+        
+        def get_path(self, point, obj) -> list[tuple[int, int]]:
+            goal_point = self.get_goal_point(point, obj)
+            return self.bfs_shortest_path(point, goal_point, obj)
         
         def move_creature(self, point: Point, obj: Creature) -> None:
-            new_coord = obj.make_move(self.map_dict, point, self.size, obj)
-            if (isinstance(obj, Predator)):
-                target = self.map_dict.get(new_coord)
-                if(isinstance(target, Herbivore)):
-                    if target.is_dead():
-                        self.change_entity(obj, new_coord, point)
-                        # self.map_dict.pop(point)
-                        # obj.point = new_coord
-                        # self.map_dict[new_coord] = obj
-                        print(f"{target} убит")
-                    # else:
-                    #     print(f"{target} ранен")
-                else:
-                    self.change_entity(obj, new_coord, point)
-            else:
-                self.change_entity(obj, new_coord, point)
+            new_coord = obj.make_move(point, self)
+            self.change_entity(obj, new_coord, point)
     
     class Action():
         def __init__(self, map):
@@ -122,8 +156,7 @@ class Simulation():
             self.reset_entities = [
                 Grass, Herbivore    
             ]
-                
-                    
+                      
             self.init_actions()
         
         def __random_cord(self) -> int:
@@ -149,7 +182,7 @@ class Simulation():
             temp_map = self.map.map_dict.copy()
             for key, value in temp_map.items():
                 # print("перебор")
-                if(isinstance(value, Creature)):
+                if(isinstance(value, Herbivore)):
                     self.map.move_creature(key, value)
                     # print("добавлен чел")
                                         
