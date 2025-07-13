@@ -31,10 +31,11 @@ class Herbivore(Creature):
     def make_move(
             self,
             point: Point,
-            map
+            path
             ) -> list[tuple[int, int]]:   
-        path = map.get_path(point, Grass) 
-        if not path:  
+        print("MAKE MOVE") 
+        if not path:
+            print(f"{path}")
             return point
         
         speed_path = path[:self.speed]
