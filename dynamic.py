@@ -78,11 +78,9 @@ class Predator(Creature):
         
     def make_move(self, point: Point, path) -> Point:
         if not path:
-            # print("Возвращаем point {point}")
             return point
             
         if len(path) == 1:
-            # print("Возвращаем point {point}")
             return point
             
         speed_path = path[:self.speed]

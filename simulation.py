@@ -92,7 +92,6 @@ class Simulation():
                     if neighbor not in visited:
                         entity = self.map_dict.get(neighbor)
                         
-                      
                         if entity is None or (neighbor == goal_point and self.is_reachable(neighbor, obj)):
                             visited.add(neighbor)
                             queue.append((neighbor, path + [(dx, dy)]))
@@ -115,10 +114,6 @@ class Simulation():
             point: Point,
             obj: Entity
             ) -> Point:
-            # if isinstance(obj, Herbivore):
-            #     obj = Grass
-            # elif isinstance(obj, Predator):
-            #     obj = Herbivore
             obj = self.get_object(obj)    
             positions = self.get_positions(obj)
             
@@ -130,41 +125,41 @@ class Simulation():
                 manh_metr.append(
                     abs(point.x - goal_point.x) + abs(point.y - goal_point.y)
                     )
-            # print(f"goal point obj: {obj}")
             return positions[manh_metr.index(min(manh_metr))]
         
-        # def get_path(self, point, obj) -> list[tuple[int, int]]:
-              
-        #     goal_point = self.get_goal_point(point, obj)
-        #     # print(f"ent_type: {goal_point}") 
-        #     return  self.bfs_shortest_path(point, goal_point, obj)
+        def move_predator(self, point: Point, obj: Predator, path, new_coord):
+            goal = self.get_goal_point(point, obj)
+            
+            if (len(path) == 1):
+                target = self.map_dict.get(goal)
+                print(f"Существо по координате: {target} x {goal.x} y {goal.y}")
+                
+                if isinstance(target, Herbivore) and obj.try_attack(target):
+                    print (f"{target} убит x {goal.x} y {goal.y}")
+                    self.move_entity(point, obj, goal)   
+                else:
+                    print(f"target:{target}")
+                    self.move_entity(point, obj, goal)  
+            else: 
+                self.move_entity(point, obj, new_coord)
+                
+        def move_herbivore(self, point, obj, new_coord):
+            self.move_entity(point, obj, new_coord)
         
         def move_creature(self, point: Point, obj: Creature) -> None:
             goal = self.get_goal_point(point, obj) 
             path = self.bfs_shortest_path(point, goal, obj)
             new_coord = obj.make_move(point, path)
+            
             print(f"Старая координата: {point} {point.x} {point.y}")
             print(f"Координата: {new_coord} {new_coord.x} {new_coord.y}")
             print(f"Путь: {path}")
-            if (isinstance(obj, Predator)) and (len(path) == 1):
-                target = self.map_dict.get(goal)
-                print(f"Существо по координате: {target} x {goal.x} y {goal.y}")
-                print("Длина 1")
-                if isinstance(target, Herbivore):
-                    if obj.try_attack(target):
-                        print (f"{target} убит x {goal.x} y {goal.y}")
-                        self.move_entity(point, obj, goal)
-                    else:
-                        print (f"{target} ранен x {goal.x} y {goal.y}")    
-                else:
-                    print(f"target:{target}")
-                    self.move_entity(point, obj, goal)
-            else:
-                
-                self.move_entity(point, obj, new_coord)
+            
+            if isinstance(obj, Predator):
+                self.move_predator(point, obj, path, new_coord)
+            elif isinstance(obj, Grass):
+                self.move_herbivore(point, obj, new_coord)
 
-                    
-    
     class Action():
         def __init__(self, map):
             self.map = map 
@@ -211,21 +206,3 @@ class Simulation():
                 if(isinstance(value, Creature)):
                     self.map.move_creature(key, value)
                                         
-                                        
-            # for value in self.map.map_dict.values():
-            #     if isinstance(value, Grass):
-            #         grass_count += 1
-            #     if isinstance(value, Herbivore):
-            #         herbivore_count += 1
-                              
-            # self.coords = [i for i in range(self.map.size)]
-            # for i in self.reset_entities:
-            #     entity = self.map.map_dict.get(i)
-            #     capacity = self.capacity.get(i)
-            #     if capacity < grass_count:
-            #         for x in range(self.map.size):
-            #             pass 
-                        
-                
-            
-        
