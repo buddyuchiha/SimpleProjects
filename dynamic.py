@@ -10,9 +10,25 @@ class Creature(Entity):
         self.speed = speed
         super().__init__(point, image)
         
-    @abstractmethod
-    def make_move(self) -> Point:
-        pass 
+    def make_move(
+        self,
+        point: Point,
+        path
+        ) -> list[tuple[int, int]]:   
+        print("MAKE MOVE") 
+        if not path:
+            print(f"{path}")
+            return point
+        
+        speed_path = path[:self.speed]
+        new_point = Point(point.x, point.y)
+        
+        for coords in speed_path:
+            new_point.x += coords[0]
+            new_point.y += coords[1]
+            
+        print(f"{new_point}")
+        return new_point
     
 
 class Herbivore(Creature):
@@ -26,29 +42,26 @@ class Herbivore(Creature):
         super().__init__(point, hp, speed, image)
     
     def is_dead(self):
-        return self.hp == 0
+        return self.hp <= 0
     
     def make_move(
             self,
             point: Point,
             path
             ) -> list[tuple[int, int]]:   
-        print("MAKE MOVE") 
         if not path:
             print(f"{path}")
             return point
         
         speed_path = path[:self.speed]
-        
         new_point = Point(point.x, point.y)
+        
         for coords in speed_path:
             new_point.x += coords[0]
             new_point.y += coords[1]
-        print(f"{new_point}")
+            
+        print(f"Схавал {new_point}")
         return new_point
-    
-    def get_hp(self) -> int:
-        return self.hp
 
 
 class Predator(Creature):
@@ -63,34 +76,25 @@ class Predator(Creature):
         super().__init__(point, hp, speed, image)
         self.damage = damage     
         
-    def make_move(
-            self,
-            point: Point,
-            map
-            ) -> Point: 
-        path = map.get_path(point, Herbivore)
+    def make_move(self, point: Point, path) -> Point:
+        if not path:
+            # print("Возвращаем point {point}")
+            return point
+            
+        if len(path) == 1:
+            # print("Возвращаем point {point}")
+            return point
+            
         speed_path = path[:self.speed]
-        
-        if (len(path) == 1):
-            goal_point = map.get_goal_point(point, Herbivore)
-            herbivore = map.map_dict.get(goal_point)
-            herbivore.hp -= self.damage
-            if herbivore.is_dead():
-                return goal_point
-            else:
-                # print("Охотник двинулся")
-                return point
-        if (len(speed_path) == len(path)):
-            speed_path = path[:self.speed+1]
-            
-            
         new_point = Point(point.x, point.y)
+        
         for coords in speed_path:
             new_point.x += coords[0]
             new_point.y += coords[1]
-
-        # print("Охотник двинулся")
+            
         return new_point
     
-    def attack_creature(self, obj, map_dict, goal_point):
-        obj = map_dict.get()
+    def try_attack(self, target: Herbivore) -> bool:
+        target.hp -= self.damage
+        print(f"🦖 атакует 🦕 на {target.point.x}, {target.point.y}. Осталось HP: {target.hp}")
+        return target.is_dead()

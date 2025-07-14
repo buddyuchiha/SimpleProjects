@@ -9,13 +9,9 @@ class Point():
         return hash((self.x, self.y))
     
     def __eq__(self, other): 
+        if not isinstance(other, Point):
+            return False
         return self.x == other.x and self.y == other.y
-    
-    def get_x(self):
-        return self.x 
-    
-    def get_y(self):
-        return self.y
     
     # def get_neighbours(self, size: int):
     #     coords = [(0, 1), (1, 0), (0, -1), (-1, 0)]
