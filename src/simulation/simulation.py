@@ -39,7 +39,6 @@ class Simulation():
             
             self.counter += 1
 
-    
     def start_simulation(self):
         if not self.running:
             self.running = True 
