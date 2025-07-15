@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
-from collections import deque
+from abc import abstractmethod
 
-from base import Point, Entity
-from static import Grass
+from base.base import Point, Entity
+
 
 class Creature(Entity):
     def __init__(self, point: Point, hp: int, speed: int, image: str):
@@ -10,26 +9,10 @@ class Creature(Entity):
         self.speed = speed
         super().__init__(point, image)
         
-    def make_move(
-        self,
-        point: Point,
-        path
-        ) -> list[tuple[int, int]]:   
-        print("MAKE MOVE") 
-        if not path:
-            print(f"{path}")
-            return point
-        
-        speed_path = path[:self.speed]
-        new_point = Point(point.x, point.y)
-        
-        for coords in speed_path:
-            new_point.x += coords[0]
-            new_point.y += coords[1]
-            
-        print(f"{new_point}")
-        return new_point
-    
+    @abstractmethod
+    def make_move(self):
+        pass
+
 
 class Herbivore(Creature):
     def __init__(
@@ -41,16 +24,11 @@ class Herbivore(Creature):
             ):
         super().__init__(point, hp, speed, image)
     
-    def is_dead(self):
+    def is_dead(self) -> bool:
         return self.hp <= 0
     
-    def make_move(
-            self,
-            point: Point,
-            path
-            ) -> list[tuple[int, int]]:   
+    def make_move(self, point: Point, path: list[tuple[int, int]]) -> Point:   
         if not path:
-            print(f"{path}")
             return point
         
         speed_path = path[:self.speed]
@@ -60,7 +38,6 @@ class Herbivore(Creature):
             new_point.x += coords[0]
             new_point.y += coords[1]
             
-        print(f"Схавал {new_point}")
         return new_point
 
 
@@ -76,7 +53,7 @@ class Predator(Creature):
         super().__init__(point, hp, speed, image)
         self.damage = damage     
         
-    def make_move(self, point: Point, path) -> Point:
+    def make_move(self, point: Point, path: list[tuple[int, int]]) -> Point:
         if not path:
             return point
             
@@ -93,6 +70,8 @@ class Predator(Creature):
         return new_point
     
     def try_attack(self, target: Herbivore) -> bool:
+        if target.is_dead():
+            return False
+            
         target.hp -= self.damage
-        print(f"🦖 атакует 🦕 на {target.point.x}, {target.point.y}. Осталось HP: {target.hp}")
         return target.is_dead()

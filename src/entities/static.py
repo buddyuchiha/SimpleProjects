@@ -1,4 +1,4 @@
-from base import Point, Entity
+from base.base import Point, Entity
 
 
 class Grass(Entity):

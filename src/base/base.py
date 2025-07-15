@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 
 class Point():
     def __init__(self, x , y):
@@ -12,15 +12,6 @@ class Point():
         if not isinstance(other, Point):
             return False
         return self.x == other.x and self.y == other.y
-    
-    # def get_neighbours(self, size: int):
-    #     coords = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    #     neighbors = []
-    #     for dx, dy in coords:
-    #         neighbor = Point(self.x + dx, self.y + dy)
-    #         if not (0 <= neighbor.x < size and 0 <= neighbor.y < size):
-    #             neighbors.append(neighbor)
-    #     return neighbors
 
 
 class Entity(ABC):
@@ -33,6 +24,3 @@ class Entity(ABC):
     
     def __str__(self):
         return self.image 
-
-         
-    
