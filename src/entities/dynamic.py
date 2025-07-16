@@ -9,10 +9,18 @@ class Creature(Entity):
         self.speed = speed
         super().__init__(point, image)
         
-    @abstractmethod
-    def make_move(self):
-        pass
-
+    def make_move(self, point: Point, path: list[tuple[int, int]]) -> Point:
+        if not path:
+            return point
+            
+        speed_path = path[:self.speed]
+        new_point = Point(point.x, point.y)
+        
+        for coords in speed_path:
+            new_point.x += coords[0]
+            new_point.y += coords[1]
+            
+        return new_point
 
 class Herbivore(Creature):
     def __init__(
@@ -26,19 +34,6 @@ class Herbivore(Creature):
     
     def is_dead(self) -> bool:
         return self.hp <= 0
-    
-    def make_move(self, point: Point, path: list[tuple[int, int]]) -> Point:   
-        if not path:
-            return point
-        
-        speed_path = path[:self.speed]
-        new_point = Point(point.x, point.y)
-        
-        for coords in speed_path:
-            new_point.x += coords[0]
-            new_point.y += coords[1]
-            
-        return new_point
 
 
 class Predator(Creature):
@@ -52,22 +47,6 @@ class Predator(Creature):
             ):
         super().__init__(point, hp, speed, image)
         self.damage = damage     
-        
-    def make_move(self, point: Point, path: list[tuple[int, int]]) -> Point:
-        if not path:
-            return point
-            
-        if len(path) == 1:
-            return point
-            
-        speed_path = path[:self.speed]
-        new_point = Point(point.x, point.y)
-        
-        for coords in speed_path:
-            new_point.x += coords[0]
-            new_point.y += coords[1]
-            
-        return new_point
     
     def try_attack(self, target: Herbivore) -> bool:
         if target.is_dead():

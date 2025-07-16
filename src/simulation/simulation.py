@@ -10,10 +10,14 @@ from entities.static import Grass, Rock, Tree
 
 
 class Simulation():
-    def __init__(self, size: int):
-        self.map = self.Map(size)
-        self.renderer = self.Renderer(self.map)
-        self.action = self.Action(self.map)
+    def __init__(self, 
+                 map,
+                 renderer,
+                 action,
+                 ):
+        self.map = map
+        self.renderer = renderer
+        self.action = action
         self.counter = 0
 
         self.running = False
@@ -106,8 +110,12 @@ class Simulation():
             self.del_entity(point)
             obj.point = goal_point
             self.map_dict[goal_point] = obj
+            
+        def get_entity(self, point: Point):
+            return self.map_dict.get(Point)
          
-        def get_object(self, obj: Herbivore | Predator) -> Grass | Herbivore:
+        @staticmethod
+        def get_object(obj: Herbivore | Predator) -> Grass | Herbivore:
             if isinstance(obj, Herbivore):
                 obj = Grass
                 
@@ -122,15 +130,6 @@ class Simulation():
                 if isinstance(value, obj)
                 ]     
             return len(objects)
-        
-        def get_available_points(self) -> list[Point]:
-            available = []
-            for x in range(self.size):
-                for y in range(self.size):
-                    point = Point(x, y)
-                    if point not in self.map_dict:
-                        available.append(point)
-            return available
          
         def is_reachable(self, point: Point, obj: Creature) -> bool:
             entity = self.map_dict.get(point)
@@ -223,14 +222,14 @@ class Simulation():
             
             path = self.bfs_shortest_path(point, goal, obj)
             
-            if len(path) <= 1:
+            if len(path) == 1:
                 if obj.try_attack(target):
                     self.del_entity(goal)
                     if goal not in self.map_dict:
                         self.move_entity(point, obj, goal)
             else:
                 new_coord = obj.make_move(point, path)
-                if new_coord not in self.map_dict:
+                if self.map_dict.get(new_coord) != Predator:
                     self.move_entity(point, obj, new_coord)
                 
         def move_herbivore(self, point: Point, obj: Herbivore) -> None:
@@ -241,11 +240,11 @@ class Simulation():
             self.move_entity(point, obj, new_coord)
         
         def move_creature(self, point: Point, obj: Creature) -> None:
-            if isinstance(obj, Predator):
-                self.move_predator(point, obj)
-                
-            elif isinstance(obj, Herbivore):
+            if isinstance(obj, Herbivore):
                 self.move_herbivore(point, obj)
+            
+            elif isinstance(obj, Predator):
+                self.move_predator(point, obj)
 
 
     class Action():
@@ -269,46 +268,60 @@ class Simulation():
             
             self.init_actions()
         
-        def __random_cord(self) -> int:
-            if not self.coords:
-                raise ValueError(self.coords)
+        def __random_cord(self, coords) -> int:
+            if not coords:
+                raise ValueError(coords)
             
-            coord = choice(self.coords)
-            self.coords.remove(coord)
+            coord = choice(coords)
+            coords.remove(coord)
             
-            return coord    
+            return coord, coords    
         
         def init_actions(self) -> None:
             for x in range(self.map.size):
-                self.coords = [i for i in range(self.map.size)]
+                coords = [i for i in range(self.map.size)]
                 
                 for key, value in self.capacity.items():
                     for _ in range(value):
-                        coord_y = self.__random_cord()
+                        
+                        coord_y, coords = self.__random_cord(coords)
                         point = Point(x, coord_y)
                         self.map.add_entity(point, key)
+        
+        def reset_action(self) -> None:
+            temp_map = self.map.map_dict.copy()
+            for reset_entity in self.reset_entities:
+                entity_count = self.map.get_entity_count(reset_entity)
+                entity_capacity = self.capacity.get(reset_entity) \
+                * int(self.map.size / 2)
+                
+                while entity_count < entity_capacity: 
+                
+                    for x in range(self.map.size):
+                        coords = [i for i in range(self.map.size)] 
+                        while True:
+                            coord_y, coords = self.__random_cord(coords)
+                            point = Point(x, coord_y)
+                            if not coords: 
+                                break
+                            
+                            if point not in temp_map:
+                                self.map.add_entity(point, reset_entity)
+                                entity_count += 1
+                                break            
                         
         def turn_actions(self) -> None:
             temp_map = self.map.map_dict.copy()
             for key, value in temp_map.items():
-                if(isinstance(value, Creature)):
+                if isinstance(value, Predator):
                     self.map.move_creature(key, value)
-            
-            for reset_entity in self.reset_entities:
-                entity_count = self.map.get_entity_count(reset_entity) 
+
+            temp_map = self.map.map_dict.copy()
+            for key, value in temp_map.items():
+                if isinstance(value, Herbivore):
+                    self.map.move_creature(key, value)
                 
-                points = self.map.get_available_points()                    
-                if not points:  
-                    continue
-                
-                entity_capacity = self.capacity.get(reset_entity) \
-                    * int(self.map.size / 2)
-                while entity_count < entity_capacity and points: 
-                    point = choice(points)
-                    self.map.add_entity(point, reset_entity)
-                    
-                    entity_count += 1
-                    points.remove(point)
+            self.reset_action()
                                         
     
     class Renderer():
