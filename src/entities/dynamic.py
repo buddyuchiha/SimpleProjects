@@ -4,7 +4,7 @@ from base.base import Point, Entity
 
 
 class Creature(Entity):
-    def __init__(self, point: Point, hp: int, speed: int, image: str):
+    def __init__(self, point: Point, hp: int, speed: int, image: str) -> None:
         self.hp = hp
         self.speed = speed
         super().__init__(point, image)
@@ -29,7 +29,7 @@ class Herbivore(Creature):
             hp: int = 10, 
             speed: int = 5, 
             image: str = '🦕'
-            ):
+            ) -> None:
         super().__init__(point, hp, speed, image)
     
     def is_dead(self) -> bool:
@@ -44,7 +44,7 @@ class Predator(Creature):
             hp: int = 10, 
             speed: int = 4, 
             image: str = '🦖'
-            ):
+            ) -> None:
         super().__init__(point, hp, speed, image)
         self.damage = damage     
     

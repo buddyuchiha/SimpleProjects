@@ -15,7 +15,7 @@ class Point():
 
 
 class Entity(ABC):
-    def __init__(self, point: Point, image: str):
+    def __init__(self, point: Point, image: str) -> None:
         self.image = image 
         self.point = point
         
