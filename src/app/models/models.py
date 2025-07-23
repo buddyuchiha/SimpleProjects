@@ -8,13 +8,14 @@ from app.services.logging import logger
 class Currencies:
     def __init__(self) -> None:
         self.con = sq.connect(config.CURRENCIES_DB_PATH)
+        self.con.row_factory = sq.Row  
         self.cur = self.con.cursor()
         self.cur.execute(
             """
             CREATE TABLE IF NOT EXISTS currencies (
                 id INTEGER PRIMARY KEY,
-                code TEXT,
-                full_name TEXT UNIQUE,
+                code TEXT UNIQUE,
+                full_name TEXT,
                 sign TEXT
             );
             """
@@ -22,7 +23,7 @@ class Currencies:
         
         logger.info("(Re-)Created Currencies table")
        
-    def create(self, code: str, full_name: str, sign: str) -> None:
+    def create(self, full_name: str, code: str, sign: str) -> None:
         self.cur.execute(
             """
             INSERT INTO currencies (code, full_name, sign)
@@ -43,8 +44,22 @@ class Currencies:
         )
         
         logger.info("Reading data from the Currencies table")
+        rows = self.cur.fetchall()
+        return [dict(row) for row in rows]
+    
+    def read_row(self, code: str) -> list:
+        self.cur.execute(
+            """
+            SELECT *
+            FROM currencies
+            WHERE code = ?
+            """,
+            (code, )
+        )
         
-        return self.cur.fetchall()
+        logger.info("Reading data from the Currencies table")
+        rows = self.cur.fetchall()
+        return [dict(row) for row in rows]
 
     def update(self, column: str, id: int, value: any) -> None:
         allowed_columns = ["code", "full_name", "sign"]
@@ -85,6 +100,7 @@ class Currencies:
 class ExchangeRates:
     def __init__(self):
         self.con = sq.connect(config.EXCHANGE_RATES_DB_PATH)
+        self.con.row_factory = sq.Row
         self.cur = self.con.cursor()
         self.cur.execute(
             """
@@ -127,8 +143,8 @@ class ExchangeRates:
         )
         
         logger.info("Reading data from the ExchangeRates table")
-        
-        return self.cur.fetchall()
+        rows = self.cur.fetchall()
+        return [dict[row] for row in rows]
 
     def update(self, column: str, id: int, value: str) -> None:
         allowed_columns = ["base_currency_id", "target_currency_id", "rate"]
