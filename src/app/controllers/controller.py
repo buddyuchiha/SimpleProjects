@@ -1,7 +1,6 @@
 import json
 
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
 
 from app.services.logging import logger
 from core import config
@@ -19,9 +18,11 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
         self.end_headers()
         logger.info(f"GET Request with path: {self.path}")
         answer = self.router.handle_get(self.path)
-        logger.info(f"Answer to GET Request with path {self.path}: {json.dumps(answer)}")
-        self.wfile.write(json.dumps(answer).encode('utf-8'))        
-        # self.wfile.write(bytes("<html><body><h1>HELLO WORLD</h1></body></html>", "utf-8"))        
+        logger.info(
+            f"Answer to GET Request with path"
+            f"{self.path}: {json.dumps(answer)}"
+            )
+        self.wfile.write(json.dumps(answer).encode('utf-8'))             
         
     def do_POST(self):
         content_length = int(self.headers['Content-Length'])
@@ -32,13 +33,20 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
         self.end_headers()
         logger.info(f"POST Request with path: {self.path}")
         answer = self.router.handle_post(self.path, data)
-        logger.info(f"Answer to POST Request with path {self.path}: {json.dumps(answer)}")
+        logger.info(
+            f"Answer to POST Request with path"
+            f"{self.path}: {json.dumps(answer)}"
+            )
         self.wfile.write(json.dumps(answer).encode('utf-8'))        
 
 
 def start():
-    logger.info(f"Creating server with HOST: {config.HOST}, PORT: {config.PORT}.")
+    logger.info(
+        f"Creating server with HOST: {config.HOST}, PORT: {config.PORT}."
+        )
     server = HTTPServer((config.HOST, config.PORT), ExchangeHTTP)
     server.serve_forever()
     server.server_close
-    logger.info(f"Server closed with HOST: {config.HOST}, PORT: {config.PORT}.")
+    logger.info(
+        f"Server closed with HOST: {config.HOST}, PORT: {config.PORT}."
+        )

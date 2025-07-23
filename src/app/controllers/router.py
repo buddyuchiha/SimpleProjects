@@ -35,7 +35,9 @@ class Router:
                     logger.info(f"Router catch '/currencies' path to: {path}")
                     return self.handle_currencies_data(data)
                 case "/exchangeRates":
-                    logger.info(f"Router catch '/exchangeRates' path to: {path}")
+                    logger.info(
+                        f"Router catch '/exchangeRates' path to: {path}"
+                        )
                     return self.handle_exchange_rates()
                 
     def handle_home(self):
@@ -44,13 +46,18 @@ class Router:
     
     def handle_currencies(self):
         answer = self.currencies.read()
-        logger.info(f"Calling handle_currencies function and received: {answer}")
+        logger.info(
+            f"Calling handle_currencies function and received: {answer}"
+            )
         return answer
     
     def handle_numeric_currency(self, path: str):
         code = path[-3:]
         answer = self.currencies.read_row(code)
-        logger.info(f"Calling handle_currencies function and received: {answer} for code: {code}")
+        logger.info(
+            f"Calling handle_currencies function"
+            f"and received: {answer} for code: {code}"
+            )
         return answer
     
     def handle_exchange_rates(self):
@@ -62,7 +69,11 @@ class Router:
         return "<html><body><h1>handle_exchange_rate</h1></body></html>"
     
     def handle_currencies_data(self, data: dict):
-        logger.info(f"Calling handle_currencies_data function for name: {data["name"]}, code: {data["code"]}, sign: {data["sign"]}")
+        logger.info(
+            f"Calling handle_currencies_data function for "
+            f"name: {data["name"]}, code: {data["code"]},"
+            f"sign: {data["sign"]}"
+            )
         self.currencies.create(data["name"], data["code"], data["sign"]) 
     
         

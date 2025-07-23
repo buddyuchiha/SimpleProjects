@@ -8,7 +8,8 @@ from app.services.logging import logger
 class Currencies:
     def __init__(self) -> None:
         self.con = sq.connect(config.CURRENCIES_DB_PATH)
-        self.con.row_factory = sq.Row  
+        self.con.row_factory = sq.Row 
+         
         self.cur = self.con.cursor()
         self.cur.execute(
             """
@@ -44,6 +45,7 @@ class Currencies:
         )
         
         logger.info("Reading data from the Currencies table")
+        
         rows = self.cur.fetchall()
         return [dict(row) for row in rows]
     
@@ -58,6 +60,7 @@ class Currencies:
         )
         
         logger.info("Reading data from the Currencies table")
+        
         rows = self.cur.fetchall()
         return [dict(row) for row in rows]
 
@@ -101,6 +104,7 @@ class ExchangeRates:
     def __init__(self):
         self.con = sq.connect(config.EXCHANGE_RATES_DB_PATH)
         self.con.row_factory = sq.Row
+        
         self.cur = self.con.cursor()
         self.cur.execute(
             """
@@ -143,6 +147,7 @@ class ExchangeRates:
         )
         
         logger.info("Reading data from the ExchangeRates table")
+        
         rows = self.cur.fetchall()
         return [dict[row] for row in rows]
 
