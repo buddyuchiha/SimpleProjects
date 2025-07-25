@@ -1,123 +1,95 @@
-from abc import ABC, abstractmethod
-import sqlite3 as sq
+import json
 
 from core import config
-from app.services.logging import logger
+from app.models.connect_manager import Connection
+from app.models.currencies_migration import cur_mirgation
+from app.models.exchange_rates_migration import ex_migration
+from app.utils.logging import logger
 
 
 class Currencies:
     def __init__(self) -> None:
-        self.con = sq.connect(config.CURRENCIES_DB_PATH)
-        self.con.row_factory = sq.Row 
-         
-        self.cur = self.con.cursor()
-        self.cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS currencies (
-                id INTEGER PRIMARY KEY,
-                code TEXT UNIQUE,
-                full_name TEXT,
-                sign TEXT
-            );
-            """
-        )
+        cur_mirgation(config.DB_PATH)
         
-        logger.info("(Re-)Created Currencies table")
-       
     def create(self, full_name: str, code: str, sign: str) -> None:
-        self.cur.execute(
-            """
-            INSERT INTO currencies (code, full_name, sign)
-            VALUES (?, ?, ?);           
-            """,
-            (code, full_name, sign)
-        )
-        self.con.commit()
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                INSERT INTO currencies (code, full_name, sign)
+                VALUES (?, ?, ?);           
+                """,
+                (code, full_name, sign)
+            )
+            db.conn.commit()
         
-        logger.info("Creating record to the Currencies table")
+            logger.info("Creating record to the Currencies table")
 
     def read(self) -> list:
-        self.cur.execute(
-            """
-            SELECT *
-            FROM currencies
-            """
-        )
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                SELECT *
+                FROM currencies
+                """
+            )
         
-        logger.info("Reading data from the Currencies table")
-        
-        rows = self.cur.fetchall()
-        return [dict(row) for row in rows]
+            logger.info("Reading data from the Currencies table")
+            
+            rows = db.cur.fetchall()
+            return [dict(row) for row in rows]
     
     def read_row(self, code: str) -> list:
-        self.cur.execute(
-            """
-            SELECT *
-            FROM currencies
-            WHERE code = ?
-            """,
-            (code, )
-        )
-        
-        logger.info("Reading data from the Currencies table")
-        
-        rows = self.cur.fetchall()
-        return [dict(row) for row in rows]
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                SELECT *
+                FROM currencies
+                WHERE code = ?
+                """,
+                (code, )
+            )
+            
+            logger.info("Reading data from the Currencies table")
+            
+            rows = db.cur.fetchall()
+            return [dict(row) for row in rows]
 
     def update(self, column: str, id: int, value: any) -> None:
         allowed_columns = ["code", "full_name", "sign"]
         if column not in allowed_columns:
             raise ValueError(f"Недопустимое имя столбца: {column}")
-        
-        self.cur.execute(
-            f"""
-            UPDATE currencies 
-            SET {column} = ?
-            WHERE id = ? 
-            """,
-            (value, id)
-        )
-        self.con.commit()
-        
-        logger.info(
-            f"Updated record for column: {column}, "
-            f"value: {value} and id: {id} at the Currencies table")
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                f"""
+                UPDATE currencies 
+                SET {column} = ?
+                WHERE id = ? 
+                """,
+                (value, id)
+            )
+            db.conn.commit()
+            
+            logger.info(
+                f"Updated record for column: {column}, "
+                f"value: {value} and id: {id} at the Currencies table")
     
     def delete(self, id: int) -> None:
-        self.cur.execute(
-            """
-            DELETE FROM currencies
-            WHERE id = ?
-            """,
-            (id, )
-        )
-        self.con.commit()
-        
-        logger.info(f"Deleted record for id: {id} at the Currencies table")
-        
-    def __del__(self):
-        self.con.close()
-        logger.info("Currencies table closed")
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                DELETE FROM currencies
+                WHERE id = ?
+                """,
+                (id, )
+            )
+            db.conn.commit()
+            
+            logger.info(f"Deleted record for id: {id} at the Currencies table")
         
               
 class ExchangeRates:
     def __init__(self):
-        self.con = sq.connect(config.EXCHANGE_RATES_DB_PATH)
-        self.con.row_factory = sq.Row
-        
-        self.cur = self.con.cursor()
-        self.cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS exchange_rates (
-                id INTEGER PRIMARY KEY,
-                base_currency_id INTEGER UNIQUE,
-                target_currency_id INTEGER UNIQUE,
-                rate DECIMAL(6)
-            );
-            """            
-        )
-        
-        logger.info("(Re-)Created ExchangeRates table") 
+        ex_migration(config.DB_PATH)
 
     def create(
         self, 
@@ -125,63 +97,127 @@ class ExchangeRates:
         target_currency_id: str, 
         rate: float
         ) -> None:
-        self.cur.execute(
-            """
-            INSERT INTO exchange_rates (
-                base_currency_id, target_currency_id, rate
-                )
-            VALUES (?, ?, ?)
-            """, 
-            (base_currency_id, target_currency_id, rate)
-        )
-        self.con.commit()
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                INSERT INTO exchange_rates (
+                    base_currency_id, target_currency_id, rate
+                    )
+                VALUES (?, ?, ?)
+                """, 
+                (base_currency_id, target_currency_id, rate)
+            )
+            db.conn.commit()
+            
+            logger.info("Creating record to the ExchangeRates table")
+    
+    @staticmethod        
+    def handle_answer(rows: list[tuple]) -> dict:
+        result = []
         
-        logger.info("Creating record to the ExchangeRates table")
+        for row in rows:
+            row_dict = dict(row)
+            row_dict["base_currency"] = json.loads(row_dict["base_currency"])
+            row_dict["target_currency"] = json.loads(row_dict["target_currency"])
+            result.append(row_dict)
+        
+        return result   
         
     def read(self) -> list:
-        self.cur.execute(
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
             """
-            SELECT *
-            FROM exchange_rates
-            """
-        )
-        
-        logger.info("Reading data from the ExchangeRates table")
-        
-        rows = self.cur.fetchall()
-        return [dict[row] for row in rows]
+                SELECT 
+                    exchange_rates.id,
+                    json_object(
+                        'id', base_currencies.id,
+                        'name', base_currencies.code,
+                        'code', base_currencies.full_name,
+                        'sign', base_currencies.sign
+                    ) AS "base_currency",
+                    json_object(
+                        'id', target_currencies.id,
+                        'name', target_currencies.code,
+                        'code', target_currencies.full_name,
+                        'sign', target_currencies.sign
+                    ) AS "target_currency",
+                    exchange_rates.rate
+                FROM exchange_rates
+                JOIN currencies base_currencies
+                ON exchange_rates.base_currency_id = base_currencies.id
+                JOIN currencies target_currencies
+                ON exchange_rates.target_currency_id = target_currencies.id
+                """
+            )
+            
+            logger.info("Reading data from the ExchangeRates table")
+            
+            rows = db.cur.fetchall()
+            result = ExchangeRates.handle_answer(rows)
+            
+            return rows
 
-    def update(self, column: str, id: int, value: str) -> None:
-        allowed_columns = ["base_currency_id", "target_currency_id", "rate"]
-        if column not in allowed_columns:
-            raise ValueError(f"Недопустимое имя столбца: {column}")
+    def read_row(self, first_code: str, second_code: str):
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                    SELECT 
+                        exchange_rates.id,
+                        json_object(
+                            'id', base_currencies.id,
+                            'name', base_currencies.code,
+                            'code', base_currencies.full_name,
+                            'sign', base_currencies.sign
+                        ) AS "base_currency",
+                        json_object(
+                            'id', target_currencies.id,
+                            'name', target_currencies.code,
+                            'code', target_currencies.full_name,
+                            'sign', target_currencies.sign
+                        ) AS "target_currency",
+                        exchange_rates.rate
+                    FROM exchange_rates
+                    JOIN currencies base_currencies
+                    ON exchange_rates.base_currency_id = base_currencies.id
+                    JOIN currencies target_currencies
+                    ON exchange_rates.target_currency_id = target_currencies.id
+                    WHERE base_currencies.code = ? and target_currencies.code = ?
+                    """,
+                    (first_code, second_code)
+                )
+            
+            logger.info("Reading data from the ExchangeRates table")
+            
+            rows = db.cur.fetchall()
+            result = ExchangeRates.handle_answer(rows)
+            
+            return result
+
+    def update(self, base_id: int, target_id: int, value: int) -> None:
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                f"""
+                UPDATE exchange_rates
+                SET rate = ?
+                WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) and target_currency_id = (SELECT id FROM currencies WHERE code = ?)
+                """,
+                (value, base_id, target_id)
+            )
+            db.conn.commit()
         
-        self.cur.execute(
-            f"""
-            UPDATE exchange_rates
-            SET {column} = ?
-            WHERE id = ? 
-            """,
-            (value, id)
-        )
-        self.con.commit()
-        
-        logger.info(
-            f"Updated record for column: {column}, "
-            f"value: {value} and id: {id} at the ExchangeRates table")
+            logger.info(
+                f"Updated record for base_id: {base_id} and target_id: {target_id}, "
+                f"value: {value} at the ExchangeRates table")
     
     def delete(self, id: int) -> None:
-        self.cur.execute(
-            """
-            DELETE FROM exchange_rates
-            WHERE id = ?
-            """,
-            (id, )
-        )
-        self.con.commit()
-        
-        logger.info(f"Deleted record for id: {id} at the ExchangeRates table")
+        with Connection(config.DB_PATH) as db:
+            db.cur.execute(
+                """
+                DELETE FROM exchange_rates
+                WHERE id = ?
+                """,
+                (id, )
+            )
+            db.conn.commit()
             
-    def __del__(self):
-        self.con.close()
-        logger.info("ExchangeRates table closed")
+            logger.info(f"Deleted record for id: {id} at the ExchangeRates table")
