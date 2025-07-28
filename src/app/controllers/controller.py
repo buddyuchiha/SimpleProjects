@@ -3,7 +3,7 @@ import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 from app.utils.logging import logger
-from core import config
+from core.config import config
 from .router import Router
 
 
@@ -34,8 +34,8 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
         answer = self.router.handle_get(self.path)
         
         logger.info(
-            f"Answer to GET Request with path"
-            f"{self.path}: {json.dumps(answer)}"
+            f"Answer to GET Request with path "
+            f"{self.path}: {answer}"
             )
         
         self.wfile.write(json.dumps(answer).encode('utf-8'))             
@@ -66,17 +66,16 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
             f"{self.path}: {json.dumps(answer)}"
             )
         
-        self.wfile.write(json.dumps(answer).encode('utf-8')) 
-             
+        self.wfile.write(json.dumps(answer).encode('utf-8'))              
 
 
 def start():
     logger.info(
-        f"Creating server with HOST: {config.HOST}, PORT: {config.PORT}."
+        f"Creating server with HOST: {config['SERVER']['HOST']}, PORT: {config['SERVER']['PORT']}."
         )
-    server = HTTPServer((config.HOST, config.PORT), ExchangeHTTP)
+    server = HTTPServer((config['SERVER']['HOST'], config['SERVER']['PORT']), ExchangeHTTP)
     server.serve_forever()
-    server.server_close
+    server.server_close()
     logger.info(
-        f"Server closed with HOST: {config.HOST}, PORT: {config.PORT}."
+        f"Server closed with HOST: {config['SERVER']['HOST']}, PORT: {config['SERVER']['PORT']}."
         )

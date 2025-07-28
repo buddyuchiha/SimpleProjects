@@ -1,5 +1,3 @@
-import sqlite3 as sq
-
 from app.models.connect_manager import Connection
 from app.utils.logging import logger
 

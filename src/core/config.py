@@ -1,10 +1,5 @@
-import os
-from dotenv import load_dotenv
+import yaml
 
 
-load_dotenv()
-
-DB_PATH = os.getenv("DB_PATH")
-HOST = os.getenv("HOST")
-PORT = int(os.getenv("PORT"))
-FILE_LOG = os.getenv("FILE_LOG")
+with open('config.yaml', 'r') as file:
+    config = yaml.safe_load(file)

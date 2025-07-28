@@ -1,8 +1,10 @@
 import re 
-from http.server import BaseHTTPRequestHandler
 
 from app.models.models import Currencies, ExchangeRates
+from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
 from app.utils.logging import logger
+from app.utils.services import Service
+
 
 class Router:
     def __init__(self) -> None:
@@ -25,6 +27,10 @@ class Router:
             case _ if re.fullmatch(r"/exchangeRate/\w{6}", path):
                 logger.info(f"Router catch '/exchangeRate/PAIR' path to: {path}")
                 return self.handle_exchange_rate(path)
+            
+            case _ if re.fullmatch(r"/exchange\?from=\w{3}&to=\w{3}&amount=\d+", path):
+                logger.info(f"Router catch 'GET /exchange?from=BASE&to=TARGET&amount=AMOUNT' path to: {path}")
+                return self.handle_convert(path)
             
             case _ if re.fullmatch(r"/\S+", path):
                 logger.info(f"Router catch default path to: {path}")
@@ -103,7 +109,9 @@ class Router:
             f"sign: {data["sign"]}"
             )
         
-        self.currencies.create(data["name"], data["code"], data["sign"]) 
+        currency = CurrencyDTO(0, data["code"], data["name"], data["sign"])
+        
+        self.currencies.create(currency) 
     
     def handle_exchange_rates_data(self, data: dict) -> None:
         logger.info(
@@ -113,20 +121,34 @@ class Router:
             f"rate: {data["rate"]}"
             )
         
-        self.exchange_rates.create(
+        exchange_rate = ExchangeRatesDTO(
+            1,
             data["base_currency_id"],
             data["target_currency_id"],
             data["rate"]
         )
         
+        self.exchange_rates.create(exchange_rate)
+        
     def handle_update_exchange_rate(self, path: str, data: dict) -> dict: 
-        first_code = path[-6:-3]
-        second_code = path[-3:]
-        answer = self.exchange_rates.update(first_code, second_code, data["rate"]) 
+        exchange_rate = ExchangeRatesDTO(0, path[-6:-3], path[-3:], data["rate"])
+        answer = self.exchange_rates.update(exchange_rate) 
         
         logger.info(
             f"Calling handle_update_exchange_rate function"
             f"for rate: {data["rate"]} and received: {answer}"
             )
 
+        return answer
+    
+    def handle_convert(self, path: str):
+        service = Service()
+        
+        answer = service.handle_convert(path)
+        
+        logger.info(
+            f"Calling handle_convert function with path: {path}, and"
+            f"received: {answer}"
+            )
+       
         return answer

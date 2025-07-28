@@ -1,31 +1,29 @@
-import json
-
-from core import config
 from app.models.connect_manager import Connection
 from app.models.currencies_migration import cur_mirgation
 from app.models.exchange_rates_migration import ex_migration
 from app.utils.logging import logger
-
+from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
+from core.config import config
 
 class Currencies:
     def __init__(self) -> None:
-        cur_mirgation(config.DB_PATH)
+        cur_mirgation(config['DATABASE']['PATH'])
         
-    def create(self, full_name: str, code: str, sign: str) -> None:
-        with Connection(config.DB_PATH) as db:
+    def create(self, currency: CurrencyDTO) -> None:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 INSERT INTO currencies (code, full_name, sign)
                 VALUES (?, ?, ?);           
                 """,
-                (code, full_name, sign)
+                (currency.code, currency.full_name, currency.sign)
             )
             db.conn.commit()
         
             logger.info("Creating record to the Currencies table")
 
     def read(self) -> list:
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 SELECT *
@@ -36,10 +34,10 @@ class Currencies:
             logger.info("Reading data from the Currencies table")
             
             rows = db.cur.fetchall()
-            return [dict(row) for row in rows]
+            return [CurrencyDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
     
     def read_row(self, code: str) -> list:
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 SELECT *
@@ -52,13 +50,13 @@ class Currencies:
             logger.info("Reading data from the Currencies table")
             
             rows = db.cur.fetchall()
-            return [dict(row) for row in rows]
+            return [CurrencyDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
 
     def update(self, column: str, id: int, value: any) -> None:
         allowed_columns = ["code", "full_name", "sign"]
         if column not in allowed_columns:
             raise ValueError(f"Недопустимое имя столбца: {column}")
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 f"""
                 UPDATE currencies 
@@ -74,7 +72,7 @@ class Currencies:
                 f"value: {value} and id: {id} at the Currencies table")
     
     def delete(self, id: int) -> None:
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 DELETE FROM currencies
@@ -85,19 +83,14 @@ class Currencies:
             db.conn.commit()
             
             logger.info(f"Deleted record for id: {id} at the Currencies table")
-        
-              
+            
+                      
 class ExchangeRates:
     def __init__(self):
-        ex_migration(config.DB_PATH)
+        ex_migration(config['DATABASE']['PATH'])
 
-    def create(
-        self, 
-        base_currency_id: str, 
-        target_currency_id: str, 
-        rate: float
-        ) -> None:
-        with Connection(config.DB_PATH) as db:
+    def create(self, exchange_rate: ExchangeRatesDTO) -> None:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 INSERT INTO exchange_rates (
@@ -105,26 +98,14 @@ class ExchangeRates:
                     )
                 VALUES (?, ?, ?)
                 """, 
-                (base_currency_id, target_currency_id, rate)
+                (exchange_rate.base_currency_id, exchange_rate.target_currency_id, exchange_rate.rate)
             )
             db.conn.commit()
             
             logger.info("Creating record to the ExchangeRates table")
-    
-    @staticmethod        
-    def handle_answer(rows: list[tuple]) -> dict:
-        result = []
-        
-        for row in rows:
-            row_dict = dict(row)
-            row_dict["base_currency"] = json.loads(row_dict["base_currency"])
-            row_dict["target_currency"] = json.loads(row_dict["target_currency"])
-            result.append(row_dict)
-        
-        return result   
         
     def read(self) -> list:
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
             """
                 SELECT 
@@ -153,12 +134,11 @@ class ExchangeRates:
             logger.info("Reading data from the ExchangeRates table")
             
             rows = db.cur.fetchall()
-            result = ExchangeRates.handle_answer(rows)
             
-            return rows
+            return [ExchangeRatesDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
 
-    def read_row(self, first_code: str, second_code: str):
-        with Connection(config.DB_PATH) as db:
+    def read_row(self, exchange_rate: ExchangeRatesDTO | ConvertValueDTO):
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                     SELECT 
@@ -183,34 +163,33 @@ class ExchangeRates:
                     ON exchange_rates.target_currency_id = target_currencies.id
                     WHERE base_currencies.code = ? and target_currencies.code = ?
                     """,
-                    (first_code, second_code)
+                    (exchange_rate.base_currency_id, exchange_rate.target_currency_id)
                 )
             
             logger.info("Reading data from the ExchangeRates table")
             
             rows = db.cur.fetchall()
-            result = ExchangeRates.handle_answer(rows)
             
-            return result
+            return [ExchangeRatesDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
 
-    def update(self, base_id: int, target_id: int, value: int) -> None:
-        with Connection(config.DB_PATH) as db:
+    def update(self, exchange_rate: ExchangeRatesDTO) -> None:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 f"""
                 UPDATE exchange_rates
                 SET rate = ?
                 WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) and target_currency_id = (SELECT id FROM currencies WHERE code = ?)
                 """,
-                (value, base_id, target_id)
+                (exchange_rate.rate, exchange_rate.base_currency_id, exchange_rate.target_currency_id)
             )
             db.conn.commit()
         
             logger.info(
-                f"Updated record for base_id: {base_id} and target_id: {target_id}, "
-                f"value: {value} at the ExchangeRates table")
+                f"Updated record for base_id: {exchange_rate.base_currency_id} and target_id: {exchange_rate.target_currency_id}, "
+                f"value: {exchange_rate.rate} at the ExchangeRates table")
     
     def delete(self, id: int) -> None:
-        with Connection(config.DB_PATH) as db:
+        with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
                 DELETE FROM exchange_rates

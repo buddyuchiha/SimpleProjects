@@ -1,5 +1,5 @@
 __pycache__/
-currencies_db
-exchange_rates_db
-.env
 file_log.txt
+exchange_db
+exchange
+config.yaml
