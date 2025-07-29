@@ -1,6 +1,8 @@
 import sqlite3 as sq 
+from typing import Self
 
 from app.utils.logging import logger
+
 
 class Connection:
     def __init__(self, db_name: str) -> None:
@@ -8,7 +10,7 @@ class Connection:
         
         logger.info("Database connected")
         
-    def __enter__(self):
+    def __enter__(self) -> Self:
         self.conn = sq.connect(self.db_name)
         self.cur = self.conn.cursor()
         self.cur.row_factory = sq.Row

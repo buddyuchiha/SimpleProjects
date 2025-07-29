@@ -2,7 +2,7 @@ from app.models.connect_manager import Connection
 from app.utils.logging import logger
 
 
-def cur_mirgation(path: str):
+def cur_mirgation(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """
@@ -18,12 +18,11 @@ def cur_mirgation(path: str):
         logger.info("(Re-)Created Currencies table")
         
 
-def cur_migration_2(path: str):
+def cur_migration_2(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """
-            DROP DATABASE IF EXISTS currencies
-            )
+            DROP TABLE IF EXISTS currencies
             """
         )
         

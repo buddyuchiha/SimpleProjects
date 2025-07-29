@@ -1,7 +1,5 @@
-import json
-
 from dataclasses import dataclass
-from typing import Optional
+import json
 
 @dataclass
 class CurrencyDTO:
@@ -32,8 +30,7 @@ class ExchangeRatesDTO:
             "target_currency_id" : json.loads(self.target_currency_id),
             "rate"               : self.rate
         }
-        
-    
+          
 @dataclass
 class ConvertValueDTO:
     base_currency_id     : str 

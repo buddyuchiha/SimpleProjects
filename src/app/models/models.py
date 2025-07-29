@@ -1,9 +1,10 @@
 from app.models.connect_manager import Connection
 from app.models.currencies_migration import cur_mirgation
+from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
 from app.models.exchange_rates_migration import ex_migration
 from app.utils.logging import logger
-from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
 from core.config import config
+
 
 class Currencies:
     def __init__(self) -> None:
@@ -34,9 +35,12 @@ class Currencies:
             logger.info("Reading data from the Currencies table")
             
             rows = db.cur.fetchall()
-            return [CurrencyDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
+            return [CurrencyDTO
+                    (row[0], row[1], row[2], row[3]).to_dict()
+                    for row in rows
+                    ]
     
-    def read_row(self, code: str) -> list:
+    def read_row(self, currency: CurrencyDTO) -> list:
         with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
@@ -44,18 +48,22 @@ class Currencies:
                 FROM currencies
                 WHERE code = ?
                 """,
-                (code, )
+                (currency.code, )
             )
             
             logger.info("Reading data from the Currencies table")
             
             rows = db.cur.fetchall()
-            return [CurrencyDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
+            return [CurrencyDTO
+                    (row[0], row[1], row[2], row[3]).to_dict()
+                    for row in rows
+                    ]
 
     def update(self, column: str, id: int, value: any) -> None:
         allowed_columns = ["code", "full_name", "sign"]
         if column not in allowed_columns:
             raise ValueError(f"Недопустимое имя столбца: {column}")
+        
         with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 f"""
@@ -82,11 +90,13 @@ class Currencies:
             )
             db.conn.commit()
             
-            logger.info(f"Deleted record for id: {id} at the Currencies table")
+            logger.info(
+                f"Deleted record for id: {id} at the Currencies table"
+                )
             
                       
 class ExchangeRates:
-    def __init__(self):
+    def __init__(self) -> None:
         ex_migration(config['DATABASE']['PATH'])
 
     def create(self, exchange_rate: ExchangeRatesDTO) -> None:
@@ -98,7 +108,11 @@ class ExchangeRates:
                     )
                 VALUES (?, ?, ?)
                 """, 
-                (exchange_rate.base_currency_id, exchange_rate.target_currency_id, exchange_rate.rate)
+                (
+                    exchange_rate.base_currency_id,
+                    exchange_rate.target_currency_id,
+                    exchange_rate.rate
+                )
             )
             db.conn.commit()
             
@@ -135,9 +149,12 @@ class ExchangeRates:
             
             rows = db.cur.fetchall()
             
-            return [ExchangeRatesDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
+            return [ExchangeRatesDTO
+                    (row[0], row[1], row[2], row[3]).to_dict()
+                    for row in rows
+                    ]
 
-    def read_row(self, exchange_rate: ExchangeRatesDTO | ConvertValueDTO):
+    def read_row(self, exchange_rate: ExchangeRatesDTO) -> dict:
         with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
                 """
@@ -163,14 +180,20 @@ class ExchangeRates:
                     ON exchange_rates.target_currency_id = target_currencies.id
                     WHERE base_currencies.code = ? and target_currencies.code = ?
                     """,
-                    (exchange_rate.base_currency_id, exchange_rate.target_currency_id)
+                    (
+                        exchange_rate.base_currency_id,
+                        exchange_rate.target_currency_id
+                    )
                 )
             
             logger.info("Reading data from the ExchangeRates table")
             
             rows = db.cur.fetchall()
             
-            return [ExchangeRatesDTO(row[0], row[1], row[2], row[3]).to_dict() for row in rows]
+            return [ExchangeRatesDTO
+                    (row[0], row[1], row[2], row[3]).to_dict()
+                    for row in rows
+                    ]
 
     def update(self, exchange_rate: ExchangeRatesDTO) -> None:
         with Connection(config['DATABASE']['PATH']) as db:
@@ -178,14 +201,21 @@ class ExchangeRates:
                 f"""
                 UPDATE exchange_rates
                 SET rate = ?
-                WHERE base_currency_id = (SELECT id FROM currencies WHERE code = ?) and target_currency_id = (SELECT id FROM currencies WHERE code = ?)
+                WHERE base_currency_id = \
+                (SELECT id FROM currencies WHERE code = ?) 
+                AND target_currency_id = \
+                (SELECT id FROM currencies WHERE code = ?)
                 """,
-                (exchange_rate.rate, exchange_rate.base_currency_id, exchange_rate.target_currency_id)
+                (
+                    exchange_rate.rate,
+                    exchange_rate.base_currency_id,
+                    exchange_rate.target_currency_id
+                )
             )
             db.conn.commit()
         
             logger.info(
-                f"Updated record for base_id: {exchange_rate.base_currency_id} and target_id: {exchange_rate.target_currency_id}, "
+                f"Updated record for base_id and target_id "
                 f"value: {exchange_rate.rate} at the ExchangeRates table")
     
     def delete(self, id: int) -> None:
@@ -199,4 +229,6 @@ class ExchangeRates:
             )
             db.conn.commit()
             
-            logger.info(f"Deleted record for id: {id} at the ExchangeRates table")
+            logger.info(
+                f"Deleted record for id: {id} at the ExchangeRates table"
+                )

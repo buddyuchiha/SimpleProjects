@@ -1,7 +1,7 @@
 import re 
 
 from app.models.models import Currencies, ExchangeRates
-from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
+from app.utils.dto import CurrencyDTO, ExchangeRatesDTO
 from app.utils.logging import logger
 from app.utils.services import Service
 
@@ -13,6 +13,7 @@ class Router:
     
     def handle_get(self, path: str) -> dict:
         logger.info(f"Entered in GET handler with path: {path}")
+        
         match path:
             case "/currencies":
                 logger.info(f"Router catch '/currencies' path to: {path}")
@@ -25,11 +26,18 @@ class Router:
                 logger.info(f"Router catch '/exchangeRates' path to: {path}")
                 return self.handle_exchange_rates()
             case _ if re.fullmatch(r"/exchangeRate/\w{6}", path):
-                logger.info(f"Router catch '/exchangeRate/PAIR' path to: {path}")
+                logger.info(
+                    f"Router catch '/exchangeRate/PAIR' path to: {path}"
+                    )
                 return self.handle_exchange_rate(path)
             
-            case _ if re.fullmatch(r"/exchange\?from=\w{3}&to=\w{3}&amount=\d+", path):
-                logger.info(f"Router catch 'GET /exchange?from=BASE&to=TARGET&amount=AMOUNT' path to: {path}")
+            case _ if re.fullmatch(
+                r"/exchange\?from=\w{3}&to=\w{3}&amount=\d+", path
+                ):
+                logger.info(
+                    f"Router catch 'GET /exchange?from=BASE&to=TARGET&amount="
+                    f"AMOUNT' path to: {path}"
+                    )
                 return self.handle_convert(path)
             
             case _ if re.fullmatch(r"/\S+", path):
@@ -40,6 +48,7 @@ class Router:
         logger.info(
             f"Entered in POST handler with path: {path} and data: {data}"
             )
+        
         match path:
             case "/currencies":
                 logger.info(f"Router catch '/currencies' path to: {path}")
@@ -56,10 +65,12 @@ class Router:
             )
         match path:    
             case _ if re.fullmatch(r"/exchangeRate/\w{6}", path):
-                logger.info(f"Router catch '/exchangeRate/PAIR' path to: {path}")
+                logger.info(
+                    f"Router catch '/exchangeRate/PAIR' path to: {path}"
+                    )
                 return self.handle_update_exchange_rate(path, data) 
             
-    def handle_home(self):
+    def handle_home(self) -> str:
         logger.info(f"Calling handle_home function")
         return "<html><body><h1>HOME</h1></body></html>"
     
@@ -71,14 +82,14 @@ class Router:
             )
         
         return answer
-    
+ 
     def handle_numeric_currency(self, path: str) -> dict:
-        code = path[-3:]
-        answer = self.currencies.read_row(code)
+        currency = CurrencyDTO(0, path[-3:], None, None)
+        answer = self.currencies.read_row(currency)
         
         logger.info(
             f"Calling handle_numeric currency function"
-            f"and received: {answer} for code: {code}"
+            f"and received: {answer} for code: {currency}"
             )
         
         return answer
@@ -89,13 +100,12 @@ class Router:
         logger.info(
             f"Calling handle_exchange_rates function and received: {answer}"
             )
-        
+
         return answer
     
     def handle_exchange_rate(self, path: str) -> dict:
-        first_code = path[-6:-3]
-        second_code = path[-3:]
-        answer = self.exchange_rates.read_row(first_code, second_code) 
+        exchage_rate = ExchangeRatesDTO(None, path[-6:-3], path[-3:], None)
+        answer = self.exchange_rates.read_row(exchage_rate) 
         
         logger.info(
             f"Calling handle_exchange_rate function and received: {answer}")
@@ -131,7 +141,12 @@ class Router:
         self.exchange_rates.create(exchange_rate)
         
     def handle_update_exchange_rate(self, path: str, data: dict) -> dict: 
-        exchange_rate = ExchangeRatesDTO(0, path[-6:-3], path[-3:], data["rate"])
+        exchange_rate = ExchangeRatesDTO(
+            0, 
+            path[-6:-3],
+            path[-3:], 
+            data["rate"]
+            )
         answer = self.exchange_rates.update(exchange_rate) 
         
         logger.info(
@@ -141,7 +156,7 @@ class Router:
 
         return answer
     
-    def handle_convert(self, path: str):
+    def handle_convert(self, path: str) -> dict:
         service = Service()
         
         answer = service.handle_convert(path)

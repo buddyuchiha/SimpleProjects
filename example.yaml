@@ -1,0 +1,7 @@
+DATABASE:
+  PATH: "your path to db"
+SERVER:
+  HOST: "your host"
+  PORT: "your port
+LOGGING:
+  PATH: "your path to log file"
