@@ -18,7 +18,7 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server) -> None:
         currencies = Currencies()
         exchange_rates = ExchangeRates()
-        service = ServiceConverted()
+        service = ServiceConverted(currencies, exchange_rates)
         
         self.router = Router(currencies, exchange_rates, service)
         super().__init__(request, client_address, server)
