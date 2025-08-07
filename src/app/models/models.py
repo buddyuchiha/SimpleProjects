@@ -1,14 +1,14 @@
 from app.models.connect_manager import Connection
-from app.models.currencies_migration import cur_mirgation
+from app.migrations.currencies_migration import cur_update
 from app.utils.dto import CurrencyDTO, ExchangeRatesDTO, ConvertValueDTO
-from app.models.exchange_rates_migration import ex_migration
+from app.migrations.exchange_rates_migration import ex_update
 from app.utils.logging import logger
 from core.config import config
 
 
 class Currencies:
     def __init__(self) -> None:
-        cur_mirgation(config['DATABASE']['PATH'])
+        cur_update(config['DATABASE']['PATH'])
         
     def create(self, currency: CurrencyDTO) -> None:
         with Connection(config['DATABASE']['PATH']) as db:
@@ -97,7 +97,7 @@ class Currencies:
                       
 class ExchangeRates:
     def __init__(self) -> None:
-        ex_migration(config['DATABASE']['PATH'])
+        ex_update(config['DATABASE']['PATH'])
 
     def create(self, exchange_rate: ExchangeRatesDTO) -> None:
         with Connection(config['DATABASE']['PATH']) as db:
@@ -198,7 +198,7 @@ class ExchangeRates:
     def update(self, exchange_rate: ExchangeRatesDTO) -> None:
         with Connection(config['DATABASE']['PATH']) as db:
             db.cur.execute(
-                f"""
+                """
                 UPDATE exchange_rates
                 SET rate = ?
                 WHERE base_currency_id = \

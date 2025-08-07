@@ -1,6 +1,7 @@
 import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+from app.models.models import Currencies, ExchangeRates
 from app.utils.exceptions import (
     BadRequest400,
     Conflict409, 
@@ -8,13 +9,18 @@ from app.utils.exceptions import (
     ServerError500
 )
 from app.utils.logging import logger
+from app.utils.services import ServiceConverted
 from core.config import config
 from .router import Router
 
 
 class ExchangeHTTP(BaseHTTPRequestHandler):
     def __init__(self, request, client_address, server) -> None:
-        self.router = Router()
+        currencies = Currencies()
+        exchange_rates = ExchangeRates()
+        service = ServiceConverted()
+        
+        self.router = Router(currencies, exchange_rates, service)
         super().__init__(request, client_address, server)
     
     def set_headers(self, code: int = 200) -> None:
@@ -31,7 +37,12 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
         logger.info("Get JSON data")
         
         return json.loads(post_data.decode())
-        
+
+    def send_mistake(self, code: int, e: object) -> None:
+        self.send_response(code)
+        self.end_headers()
+        self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+
     def do_GET(self) -> None: 
         try:
             self.set_headers()
@@ -47,19 +58,13 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(answer).encode('utf-8')) 
               
         except ServerError500 as e:
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+           self.send_mistake(500, e)
             
         except BadRequest400 as e:
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
-            
+            self.send_mistake(400, e)
+     
         except NotFound404 as e:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(404, e)
                      
     def do_POST(self) -> None:
         try:
@@ -79,24 +84,16 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
             self.wfile.write("POST request handled".encode('utf-8')) 
                
         except ServerError500 as e:
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(500, e)
             
         except BadRequest400 as e:
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(400, e)
             
         except NotFound404 as e:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(404, e)
             
         except Conflict409 as e:
-            self.send_response(409)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(409, e)
             
     def do_PATCH(self) -> None:
         try:
@@ -116,24 +113,16 @@ class ExchangeHTTP(BaseHTTPRequestHandler):
             self.wfile.write("PATCH request handled".encode('utf-8')) 
              
         except ServerError500 as e:
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
-            
+            self.send_mistake(500, e)
+
         except BadRequest400 as e:
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(400, e)
             
         except NotFound404 as e:
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))
+            self.send_mistake(404, e)
             
         except Conflict409 as e:
-            self.send_response(409)
-            self.end_headers()
-            self.wfile.write(json.dumps(e.to_dict()).encode('utf-8'))      
+            self.send_mistake(409, e)
 
 
 def start() -> None:

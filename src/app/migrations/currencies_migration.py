@@ -2,7 +2,7 @@ from app.models.connect_manager import Connection
 from app.utils.logging import logger
 
 
-def cur_mirgation(path: str) -> None:
+def cur_update(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """
@@ -18,7 +18,7 @@ def cur_mirgation(path: str) -> None:
         logger.info("(Re-)Created Currencies table")
         
 
-def cur_migration_2(path: str) -> None:
+def cur_downgrade(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """

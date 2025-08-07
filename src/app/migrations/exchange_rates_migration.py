@@ -2,7 +2,7 @@ from app.models.connect_manager import Connection
 from app.utils.logging import logger
 
 
-def ex_migration(path: str) -> None:
+def ex_update(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """
@@ -21,7 +21,7 @@ def ex_migration(path: str) -> None:
         logger.info("(Re-)Created ExchangeRates table")
  
         
-def ex_migration_2(path: str) -> None:
+def ex_downgrade(path: str) -> None:
     with Connection(path) as db:
         db.cur.execute(
             """

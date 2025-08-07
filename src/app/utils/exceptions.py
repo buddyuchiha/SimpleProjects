@@ -1,22 +1,24 @@
-class ServerError500(Exception):
+class RequestException(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ServerError500(RequestException):
     def __init__(self, message: str = "Internal Server Error"):
-        self.message = message
-        super().__init__(self.message)
+        super().__init__(message)
         
         
-class BadRequest400(Exception):
+class BadRequest400(RequestException):
     def __init__(self, message: str = "Bad Request"):
-        self.message = message
-        super().__init__(self.message)
+        super().__init__(message)
     
     
-class NotFound404(Exception):
+class NotFound404(RequestException):
     def __init__(self, message: str = "Not Found"):
-        self.message = message
-        super().__init__(self.message)  
+        super().__init__(message)  
 
 
-class Conflict409(Exception):
+class Conflict409(RequestException):
     def __init__(self, message: str = "Conflict"):
-        self.message = message
-        super().__init__(self.message)    
+        super().__init__(message)    

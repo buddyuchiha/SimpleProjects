@@ -20,6 +20,7 @@ class Connection:
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        self.conn.commit()
         self.conn.close()
-        
+
         logger.info("Connect manager closed")

@@ -5,10 +5,10 @@ from app.utils.logging import logger
 from app.models.models import Currencies, ExchangeRates
 
 
-class Service:
-    def __init__(self) -> None:
-        self.currencies = Currencies()
-        self.exchange_rates = ExchangeRates()
+class ServiceConverted:
+    def __init__(self, currencies: object, exchange_rates: object) -> None:
+        self.currencies = currencies
+        self.exchange_rates = exchange_rates
         
     def __get_rate(self, exchange_rates: ConvertValueDTO) -> int:
         exchange_rate = self.exchange_rates.read_row(exchange_rates)
@@ -30,7 +30,7 @@ class Service:
         
     def handle_convert(self, path: str) -> dict:
         base_currency_id, target_currency_id, amount = \
-            Service.parse_coords(path)
+            ServiceConverted.parse_coords(path)
         
         logger.info(
             f"Entered in handle_convert function with path: {path}, "
